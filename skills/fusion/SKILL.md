@@ -28,11 +28,8 @@ user's task verbatim and answers it straight. (See `references/panel.md`.)
 **One hard rule: Opus 4.8 always judges and writes the final answer — the pipeline can't be reversed.**
 GPT-5.5 can't call back out to spawn Opus, so Opus is always the driver.
 
-## Requirement
-
-This panel needs the `codex` CLI installed and logged in to an account with GPT-5.5 access (the runner
-uses `codex exec`). If `codex` is missing, stop and tell the user how to enable it rather than answering
-with a single model — the panel is the point.
+GPT-5.5 runs via the `codex` CLI (`codex exec`), which is assumed to be installed and logged in — this is
+a manual tool, so there's no availability check to slow you down. Just fan out.
 
 ## Step 1 — Fan out, in parallel and blind
 

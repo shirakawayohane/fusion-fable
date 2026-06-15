@@ -10,6 +10,6 @@ writes the final answer grounded in the analysis.
 Follow the skill's SKILL.md exactly (fan out in parallel → judge → grounded final answer) and present the
 standard sections (Consensus / Contradictions / Partial coverage / Unique insights / Blind spots / Final
 answer). Use exactly one Opus 4.8 panelist and one GPT-5.5 panelist. Pass the task verbatim to both; no
-"lenses". If the `codex` CLI is not installed, stop and say so rather than answering with a single model.
+"lenses". `codex` is assumed installed — just fan out, no availability check.
 
 Task: $ARGUMENTS

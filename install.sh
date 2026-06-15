@@ -22,13 +22,5 @@ echo "✓ Installed Fusion-Fable into $CLAUDE_DIR"
 echo "    skill   : $CLAUDE_DIR/skills/fusion"
 echo "    command : /fusion"
 echo
-
-# The panel is Opus 4.8 + GPT-5.5; GPT-5.5 needs the 'codex' CLI.
-have() { command -v "$1" >/dev/null 2>&1; }
-if have codex; then
-  echo "Panel ready: Opus 4.8 + GPT-5.5 (codex found: $(codex --version 2>/dev/null | head -1))"
-else
-  echo "Panel needs the 'codex' CLI for GPT-5.5 — install it and log in to an account with GPT-5.5 access."
-fi
-echo
+echo "Panel: Opus 4.8 + GPT-5.5 (GPT-5.5 via the 'codex' CLI)."
 echo "Next: restart Claude Code (or run /reload-skills) so 'fusion' and the /fusion command load."

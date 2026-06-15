@@ -64,8 +64,8 @@ assembled.
 - **Claude Code**, with the session running **Opus 4.8** (the Opus panelist subagent and the judge inherit
   the session model).
 - The [`codex` CLI](https://github.com/openai/codex) installed and logged in to an account with GPT-5.5
-  access. The runner uses `codex exec` (tested against `codex-cli` 0.139). If `codex` is missing, the skill
-  stops and tells you how to enable it rather than answering with a single model — the panel is the point.
+  access. The runner uses `codex exec` (tested against `codex-cli` 0.139). This is a manual tool that
+  assumes `codex` is present, so it just runs the panel — no availability check.
 
 ## What's in here
 
