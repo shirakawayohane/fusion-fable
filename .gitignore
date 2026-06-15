@@ -5,5 +5,5 @@
 
 # Fusion scratch (runtime temp files the scripts write)
 /tmp/fusion_*
-fusion_codex_out.md
-fusion_codex_prompt.txt
+fusion_codex_out.*
+fusion_codex_prompt.*

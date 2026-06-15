@@ -40,11 +40,15 @@ independent experts who won't see the other's work. Do not assign lenses; do not
 Launch **both panelists in a single turn** so they run concurrently:
 
 - **Opus 4.8 panelist** → the `Agent` tool, `subagent_type: general-purpose` (web + bash built in).
-- **GPT-5.5 panelist** → write its prompt to a temp file and run in the background:
+- **GPT-5.5 panelist** → write its prompt to a temp file and run in the background. Use a unique pair of
+  paths (e.g. `mktemp`) so concurrent runs don't clobber each other:
   ```bash
-  bash <skill_dir>/scripts/run_codex.sh /tmp/fusion_codex_prompt.txt /tmp/fusion_codex_out.md medium
+  p=$(mktemp /tmp/fusion_codex_prompt.XXXXXX); o=$(mktemp /tmp/fusion_codex_out.XXXXXX)
+  # write the verbatim panelist prompt to "$p", then:
+  bash <skill_dir>/scripts/run_codex.sh "$p" "$o" high
   ```
-  `-o` makes codex write only its final answer to the out file; read it once it finishes.
+  The runner pins the model to GPT-5.5 and defaults to high reasoning effort. `-o` makes codex write only
+  its final answer to the out file; read it once it finishes.
 
 Keep the panelists isolated: never paste one panelist's output into the other's prompt. The orchestrator
 (you) is the judge and must stay separate from the panelists — the Opus panelist is a spawned subagent,

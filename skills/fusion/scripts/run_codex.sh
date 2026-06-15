@@ -6,9 +6,11 @@
 #
 # - <prompt_file>   : path to a file containing the FULL panelist prompt (verbatim user task + brief instruction)
 # - <output_file>   : where the panelist's final answer is written (clean, just the answer)
-# - reasoning_effort: low | medium | high   (default: medium)
+# - reasoning_effort: low | medium | high   (default: high — Fusion is high-stakes by design)
 #
 # Notes:
+# - `-m gpt-5.5` pins the panelist to GPT-5.5 so the panel is what it claims, regardless of the codex
+#   config default. Override with FUSION_CODEX_MODEL if your codex uses a different model id for GPT-5.5.
 # - `-o/--output-last-message` writes ONLY the agent's final message — no streaming noise to parse.
 # - `-s workspace-write` lets the panelist run shell commands in an isolated scratch dir (the "bash tool").
 # - `-c tools.web_search=true` enables the web search tool.
@@ -18,7 +20,8 @@ set -uo pipefail
 
 prompt_file="${1:?usage: run_codex.sh <prompt_file> <output_file> [reasoning_effort]}"
 output_file="${2:?usage: run_codex.sh <prompt_file> <output_file> [reasoning_effort]}"
-effort="${3:-medium}"
+effort="${3:-high}"
+model="${FUSION_CODEX_MODEL:-gpt-5.5}"
 
 scratch="$(mktemp -d "${TMPDIR:-/tmp}/fusion-codex.XXXXXX")"
 trap 'rm -rf "$scratch"' EXIT
@@ -26,6 +29,7 @@ trap 'rm -rf "$scratch"' EXIT
 codex exec \
   --skip-git-repo-check \
   --cd "$scratch" \
+  -m "$model" \
   -s workspace-write \
   -c tools.web_search=true \
   -c "model_reasoning_effort=$effort" \
