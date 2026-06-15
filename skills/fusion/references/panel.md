@@ -29,6 +29,11 @@ Opus panelist is a spawned subagent; the orchestrator judges) so the synthesis r
 rather than defending one it wrote itself. Opus always judges and writes the final answer — the pipeline
 can't be reversed, since GPT-5.5 can't call back out to spawn Opus.
 
+This 2-model panel is the default; OpenRouter Fusion itself defaults to 3 models and allows 1–8. Scale up
+by adding independent panelist draws (even a second Opus draw — self-fusion still lifts quality) when the
+stakes justify the extra cost. Whatever the count, every panelist answers in parallel, blind, on the
+verbatim task.
+
 ## Prompt each panelist gets
 
 Each panelist receives the user's task **verbatim**, plus a short instruction: *research with web search

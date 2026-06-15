@@ -31,6 +31,11 @@ GPT-5.5 can't call back out to spawn Opus, so Opus is always the driver.
 GPT-5.5 runs via the `codex` CLI (`codex exec`), which is assumed to be installed and logged in — this is
 a manual tool, so there's no availability check to slow you down. Just fan out.
 
+This skill mirrors OpenRouter Fusion's pipeline — **fan out → structured analysis → synthesize**, a single
+round — and like the API, **the synthesized answer is the deliverable**: there is no separate "now I'll
+build/execute it myself" phase after the panel. The panel runs on the actual deliverable, not on a plan you
+then carry out alone.
+
 ## Step 1 — Fan out, in parallel and blind
 
 Read `references/panel.md`. Build each panelist's prompt as the user's task **verbatim** plus the short
@@ -54,46 +59,61 @@ Keep the panelists isolated: never paste one panelist's output into the other's 
 (you) is the judge and must stay separate from the panelists — the Opus panelist is a spawned subagent,
 not you, so your synthesis reads both answers fresh.
 
-## Step 2 — Judge (pick the track that fits the task)
+**Panel size.** OpenRouter Fusion defaults to a 3-model panel and allows 1–8. Here the default panel is 2
+— Opus 4.8 + GPT-5.5 — which the API treats as valid (even self-fusion, Opus×Opus, lifts quality). Scale
+toward the API when the stakes warrant by adding panelist draws (e.g. a second independent Opus draw);
+every panelist still runs in parallel, blind, on the verbatim task. More panelists = proportionally more
+cost.
 
-Once both panelists have returned, read `references/judge_rubric.md` and **classify the deliverable
-first**, because code and prose merge completely differently:
+## Step 2 — Judge: structured analysis (always, one round)
 
-- **Artifact task** (code, script, config, Minecraft mod/datapack, schema — the user wants a buildable
-  thing) → **Track A: run both, then merge**. You are integrating two *implementations* into one working
-  program, not writing a report. **Run each candidate with bash first** to see what actually works and what
-  breaks in each, decide what to keep based on observed behavior (not on which looks better), graft the
-  parts that worked onto the stronger base, then **run the merged result and fix until it passes**. The
-  panel's value here is that two independent attempts expose each other's bugs — running both is how you
-  find which one is actually right, so the merge ends up **more correct than either input**. (If it truly
-  can't be executed here — needs the live game or an unavailable toolchain — fall back to seam-reasoning
-  and mark it unverified.)
-- **Research / analysis task** (the user wants understanding or a recommendation) → **Track B: structured
-  synthesis** — the five sections: **Consensus**, **Contradictions**, **Partial coverage**, **Unique
-  insights**, **Blind spots**. Don't average or smooth over conflict; independent agreement is your
-  highest-confidence signal, honest disagreement is the most useful thing the panel produces.
+Once all panelists have returned, read `references/judge_rubric.md` and produce the **structured analysis**
+— the same shape OpenRouter Fusion returns, the *same way regardless of whether the task is research or
+code*:
 
-Either way: attribute decisions to each panelist (Opus 4.8 / GPT-5.5), and weight a panelist that actually
-ran the code or read a primary source over one reasoning from memory. If a panelist failed, the judge
-treats it as **absent** — never as silent agreement.
+- **Consensus** — points all/most panelists independently agree on (your highest-confidence signal).
+- **Contradictions** — direct disagreements; adjudicate by evidence (who ran the code / read the primary
+  source), and if you can't resolve it, say so and name what would settle it.
+- **Partial coverage** — sub-questions only some panelists engaged.
+- **Unique insights** — non-obvious points exactly one panelist raised. Preserve them.
+- **Blind spots** — what the panel as a whole missed; add one of your own if you see it.
 
-## Step 3 — Final deliverable
+Attribute every point by panelist (Opus 4.8 / GPT-5.5). A panelist that failed counts as **absent**, never
+as silent agreement. Evidence outranks assertion: weight a panelist that actually ran code or read a source
+over one reasoning from memory.
 
-- **Track A (code/artifact):** emit the complete, merged artifact — every file, ready to run as-is, not a
-  diff or "take Opus's X and GPT's Y." Per `judge_rubric.md`, you got here by **running both candidates**
-  and keeping what worked, and you **run the merged result and fix it until it passes** before presenting.
-  Follow with a tight merge rationale: what each candidate did when run, what you took from each, and what
-  you verified.
-- **Track B (research):** write the answer grounded in the structured analysis — lead with high-confidence
-  consensus, fold in unique insights, flag what stays uncertain. It must follow *from* the synthesis, not
-  be one panelist's answer lightly edited.
+This analysis is a **mandatory intermediate** — you write it before the final answer, every time. It is the
+mechanism that forces each panelist's content (including the second model's) into the result. Skip it and
+the panel collapses into a single-model answer with a sanity-check stapled on.
+
+## Step 3 — Synthesize: the analysis becomes the deliverable
+
+The calling model (you, Opus 4.8) writes the **final answer grounded in that analysis** — lead with
+high-confidence consensus, fold in the unique insights, flag what stays uncertain. It must follow *from* the
+synthesis, not be one panelist's answer lightly edited.
+
+**The synthesized answer IS the deliverable.** Mirroring the API, there is no separate "now I'll just
+build/execute it myself" phase after the panel — the fused answer is the output. Two checks:
+
+- If the task is multi-step and too large for one panel, the panel is the unit of *each* hard decision:
+  re-fan-out per fork rather than paneling once up front and finishing alone.
+- If your final carries nothing that only another panelist surfaced, you under-used the panel — re-read
+  their answers before you ship.
+
+For a runnable artifact you may **verify** the synthesized result by building/running it (and fix until it
+passes, stating what you ran) — but it still flows *from* the structured analysis, not from soloing one
+candidate.
 
 ## Step 4 — Present
 
-Lead with the **final deliverable** — the merged working artifact (Track A) or the grounded answer
-(Track B) — then the audit trail beneath it: for code, what each candidate did when run + the merge
-rationale + what you verified; for research, the five-section analysis. Note which panelists participated
-(Opus 4.8 + GPT-5.5).
+Lead with the **final answer**, then the audit trail beneath it: the five-section structured analysis with
+per-panelist attribution, and — if you verified by running — what you ran and observed. Note which panelists
+participated (e.g. Opus 4.8 + GPT-5.5).
+
+## Single round & recursion protection
+
+Fusion is **one round**. Panelists and the judge must not invoke Fusion again — no nested or recursive
+fusion, no multi-round re-deliberation within a single run. Fan out once, analyze, synthesize, done.
 
 ## Cost & latency note
 
