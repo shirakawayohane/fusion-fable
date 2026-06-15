@@ -1,47 +1,32 @@
 # Fusion-Fable
 
-**Fuse a panel of frontier models into one Fable-tier answer.**
+**Fuse Opus 4.8 + GPT-5.5 into one Fable-tier answer.**
 
 Fusion-Fable is a [Claude Code](https://claude.com/claude-code) skill that runs a hard question through a
-**panel → judge** pipeline. The same prompt is dispatched to several models *in parallel* — each answering
-independently with web search and bash, none seeing the others' work — and then Opus 4.8 judges every
-answer into a structured analysis (consensus, contradictions, partial coverage, unique insights, blind
-spots) and writes a final answer grounded in it.
+**panel → judge** pipeline. The same prompt is dispatched to **Opus 4.8 and GPT-5.5 in parallel** — each
+answering independently with web search and bash, neither seeing the other's work — and then Opus 4.8
+judges both answers into a structured analysis (consensus, contradictions, partial coverage, unique
+insights, blind spots) and writes a final answer grounded in it.
 
 The mechanism is **independence, then synthesis**. The diversity that makes a panel beat a single model is
-harvested, not manufactured: running the same prompt independently yields different reasoning paths, tool
-calls, and sources — even two cold runs of the *same* model diverge enough that synthesizing them beats
-running it once. So there are no contrived "lenses" or personas; every panelist gets the task verbatim and
-answers it straight. Fuse **Opus 4.8 + Opus 4.8**, or **Opus 4.8 + GPT-5.5** (via the `codex` CLI), into a
-result better than either alone — a Fable-tier fusion.
+harvested, not manufactured: two models running the same prompt independently yield different reasoning
+paths, tool calls, and sources, and synthesizing them beats running either alone. So there are no contrived
+"lenses" or personas; both panelists get the task verbatim and answer it straight.
 
 ```
                       ┌──────────────┐
-                 ┌──▶ │  panelist 1  │ ─┐   (web + bash, independent)
-                 │    └──────────────┘  │
-                 │    ┌──────────────┐  │   ┌──────────────┐
- prompt ──▶ fan ─┼──▶ │  panelist 2  │ ─┼─▶ │   Opus 4.8   │ ──▶ final answer
-            out  │    └──────────────┘  │   │   (judge +   │     (grounded in
-                 │    ┌──────────────┐  │   │  synthesize) │      the analysis)
-                 └──▶ │  panelist 3  │ ─┘   └──────────────┘
-                      └──────────────┘
-              Opus 4.8 / GPT-5.5 / Gemini      consensus · contradictions ·
-              (each answers blind)             partial · unique · blind spots
+                 ┌──▶ │   Opus 4.8   │ ─┐   (web + bash, independent)
+ prompt ──▶ fan ─┤    └──────────────┘  │   ┌──────────────┐
+            out  │    ┌──────────────┐  ├─▶ │   Opus 4.8   │ ──▶ final answer
+                 └──▶ │   GPT-5.5    │ ─┘   │   (judge +   │     (grounded in
+                      │   (codex)    │      │  synthesize) │      the analysis)
+                      └──────────────┘      └──────────────┘
+                  each answers blind        consensus · contradictions ·
+                                            partial · unique · blind spots
 ```
 
-Opus 4.8 **always** judges and writes the final answer — the pipeline can't be reversed, because the
-panelist models can't call back out to spawn Opus.
-
-## The panels
-
-| Slug | Panel | Requires |
-| --- | --- | --- |
-| `opus4.8-4.8` | the **same prompt run twice** as 2 independent Opus 4.8 panelists → Opus judges | nothing — works everywhere |
-| `opus4.8-gpt5.5` | Opus 4.8 + **GPT-5.5** (codex) in parallel → Opus judges | the `codex` CLI |
-| `opus4.8-gpt5.5-gemini3.1pro` | Opus 4.8 + GPT-5.5 + **Gemini 3.1 Pro** in parallel → Opus judges | `codex` + `gemini` CLIs |
-
-The skill auto-detects which panelist CLIs are installed and uses the richest panel available, falling
-back gracefully when one is missing.
+Opus 4.8 **always** judges and writes the final answer — the pipeline can't be reversed, because GPT-5.5
+can't call back out to spawn Opus.
 
 ## Install
 
@@ -51,8 +36,9 @@ cd fusion-fable
 ./install.sh
 ```
 
-This copies the skill to `~/.claude/skills/fusion` and the slash commands to `~/.claude/commands`,
-then prints which panels your machine can run. Restart Claude Code (or run `/reload-skills`) afterward.
+This copies the skill to `~/.claude/skills/fusion` and the `/fusion` slash command to `~/.claude/commands`,
+then checks whether the `codex` CLI (for GPT-5.5) is available. Restart Claude Code (or run
+`/reload-skills`) afterward.
 
 > Override the target with `CLAUDE_CONFIG_DIR=/path/to/.claude ./install.sh`.
 
@@ -60,46 +46,39 @@ then prints which panels your machine can run. Restart Claude Code (or run `/rel
 
 Three ways, all equivalent under the hood:
 
-- **Natural language** — just ask. The skill auto-triggers and picks the richest panel:
+- **Natural language** — just ask. The skill auto-triggers:
   > "Run this through Fusion: is it safe to `ALTER TABLE … ADD COLUMN` on a 200M-row Postgres table in prod?"
-- **Pinned slash commands:**
+- **Slash command:**
   ```
-  /fusion-opus4.8  does my JWT refresh-rotation design have a replay hole?
-  /fusion-gpt5.5   is git push --force-with-lease actually safe on a shared branch?
+  /fusion  is git push --force-with-lease actually safe on a shared branch?
   ```
-- **Force a panel in prose** — "run the `opus4.8-gpt5.5` Fusion on …".
+- **In prose** — "run the Fusion panel on …".
 
 Every run returns the same structure: a **Final answer** up top, then the audit trail —
 **Consensus / Contradictions / Partial coverage / Unique insights / Blind spots** — with each point
-attributed to the panelist that raised it, so you can see how the answer was assembled.
+attributed to the panelist that raised it (Opus 4.8 or GPT-5.5), so you can see how the answer was
+assembled.
 
 ## Requirements
 
-- **Claude Code**, with the session running **Opus 4.8** (panelist subagents and the judge inherit the
-  session model — on another model the slug is nominal, not literal).
-- For `opus4.8-gpt5.5`: the [`codex` CLI](https://github.com/openai/codex) installed and logged in to an
-  account with GPT-5.5 access. The runner uses `codex exec` (tested against `codex-cli` 0.139).
-- For the 3-model panel: a `gemini` CLI installed and authenticated. Adjust the invocation in
-  `skills/fusion/scripts/run_gemini.sh` to match your CLI's flags.
-
-Only the **`opus4.8-4.8`** panel is truly zero-setup; the GPT-5.5 and Gemini panels light up once their
-CLIs are installed and authenticated.
+- **Claude Code**, with the session running **Opus 4.8** (the Opus panelist subagent and the judge inherit
+  the session model).
+- The [`codex` CLI](https://github.com/openai/codex) installed and logged in to an account with GPT-5.5
+  access. The runner uses `codex exec` (tested against `codex-cli` 0.139). If `codex` is missing, the skill
+  stops and tells you how to enable it rather than answering with a single model — the panel is the point.
 
 ## What's in here
 
 ```
 skills/fusion/
-  SKILL.md                  fan out in parallel → judge → grounded final answer
+  SKILL.md                  fan out Opus 4.8 + GPT-5.5 in parallel → judge → grounded final answer
   scripts/
-    detect_panel.sh         picks the richest available panel
     run_codex.sh            runs the GPT-5.5 panelist (web + bash), captures its answer
-    run_gemini.sh           runs the Gemini panelist (graceful no-op until the CLI exists)
   references/
     panel.md                why independent parallel runs (no lenses) — the panel mechanism
     judge_rubric.md         the structured analysis + grounded final answer
 commands/
-  fusion-opus4.8.md         /fusion-opus4.8  (pinned opus4.8-4.8 panel)
-  fusion-gpt5.5.md          /fusion-gpt5.5   (pinned opus4.8-gpt5.5 panel)
+  fusion.md                 /fusion  (Opus 4.8 + GPT-5.5 panel)
 install.sh                  copies the above into ~/.claude
 ```
 
@@ -107,14 +86,14 @@ install.sh                  copies the above into ~/.claude
 
 On the DRACO deep-research benchmark, OpenRouter found that fusing model answers consistently beats the
 individual models — and that a meaningful chunk of the lift comes from the *synthesis step itself*, not
-just from mixing architectures: two independent runs of one model, synthesized, beat that model run once.
-Fusion-Fable implements that same independence-then-judge pipeline locally in Claude Code.
+just from mixing architectures. Fusion-Fable implements that same independence-then-judge pipeline locally
+in Claude Code, with Opus 4.8 and GPT-5.5 as the panel.
 
 ## Cost & latency
 
-A panel costs roughly N× a single answer in tokens and runs as slow as its slowest panelist. That's the
-deliberate trade: spend more to stop being confidently wrong where that's expensive. For quick or
-low-stakes questions, a single direct answer is the right call.
+A two-model panel costs roughly 2× a single answer in tokens and runs as slow as its slowest panelist.
+That's the deliberate trade: spend more to stop being confidently wrong where that's expensive. For quick
+or low-stakes questions, a single direct answer is the right call.
 
 ## License
 

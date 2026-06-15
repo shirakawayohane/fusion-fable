@@ -14,8 +14,8 @@ asks for, so **first classify the deliverable**, then follow the matching track:
 When a task is mixed (e.g. "design and implement X"), the implementation is the deliverable: use Track A
 for the code and fold the reasoning in as brief rationale.
 
-Read every panelist response in full first, and attribute by panelist (e.g. "Opus run A", "GPT-5.5") so
-the user can see where each decision came from.
+Read both panelist responses in full first, and attribute by panelist (e.g. "Opus 4.8", "GPT-5.5") so the
+user can see where each decision came from.
 
 ---
 
@@ -71,9 +71,8 @@ at the seams (step 4) — that's where a careless merge silently breaks.
 Produce these five sections from the independent answers, then a grounded final answer.
 
 ### Consensus
-Points where panelists independently agree. Independent agreement — across model families, or even two
-cold runs of the same model — is your highest-confidence signal; flag it. Note how many converged and
-whether any got there by a different route.
+Points where the two panelists independently agree. Independent agreement across model families is your
+highest-confidence signal; flag it. Note whether they got there by a different route.
 
 ### Contradictions
 Direct disagreements on fact or recommendation. State the competing positions, who holds them, and — where
