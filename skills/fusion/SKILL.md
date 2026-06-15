@@ -98,6 +98,4 @@ rationale + what you verified; for research, the five-section analysis. Note whi
 ## Cost & latency note
 
 A two-model panel costs roughly 2× a single answer in tokens and runs as slow as its slowest panelist.
-That's the deliberate trade: you spend more to stop being confidently wrong where that's expensive. For
-quick or low-stakes questions, a single direct answer is the right call — don't reach for Fusion when one
-model would obviously do.
+That's the deliberate trade: you spend more to stop being confidently wrong where that's expensive.
