@@ -52,8 +52,8 @@ Launch **both panelists in a single turn** so they run concurrently:
   # write the verbatim panelist prompt to "$p", then:
   bash <skill_dir>/scripts/run_codex.sh "$p" "$o" high
   ```
-  The runner pins the model to GPT-5.5 and defaults to high reasoning effort. `-o` makes codex write only
-  its final answer to the out file; read it once it finishes.
+  The runner pins the model to GPT-5.5, forces Codex Fast mode, and defaults to high reasoning effort.
+  `-o` makes codex write only its final answer to the out file; read it once it finishes.
 
 Keep the panelists isolated: never paste one panelist's output into the other's prompt. The orchestrator
 (you) is the judge and must stay separate from the panelists — the Opus panelist is a spawned subagent,

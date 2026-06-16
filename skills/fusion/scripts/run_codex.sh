@@ -14,6 +14,7 @@
 # - `-o/--output-last-message` writes ONLY the agent's final message — no streaming noise to parse.
 # - `-s workspace-write` lets the panelist run shell commands in an isolated scratch dir (the "bash tool").
 # - `-c tools.web_search=true` enables the web search tool.
+# - `-c service_tier='"fast"' -c features.fast_mode=true` forces Codex Fast mode for this panelist.
 # - We run in a throwaway scratch dir so a panelist's file writes never touch your repo.
 
 set -uo pipefail
@@ -32,6 +33,8 @@ codex exec \
   -m "$model" \
   -s workspace-write \
   -c tools.web_search=true \
+  -c service_tier='"fast"' \
+  -c features.fast_mode=true \
   -c "model_reasoning_effort=$effort" \
   -o "$output_file" \
   - < "$prompt_file" \
