@@ -6,7 +6,7 @@
 #
 # - <prompt_file>   : path to a file containing the FULL panelist prompt (verbatim user task + brief instruction)
 # - <output_file>   : where the panelist's final answer is written (clean, just the answer)
-# - reasoning_effort: low | medium | high   (default: high — Fusion is high-stakes by design)
+# - reasoning_effort: low | medium | high | xhigh   (default: xhigh — Fusion is high-stakes by design)
 #
 # Notes:
 # - `-m gpt-5.5` pins the panelist to GPT-5.5 so the panel is what it claims, regardless of the codex
@@ -21,7 +21,7 @@ set -uo pipefail
 
 prompt_file="${1:?usage: run_codex.sh <prompt_file> <output_file> [reasoning_effort]}"
 output_file="${2:?usage: run_codex.sh <prompt_file> <output_file> [reasoning_effort]}"
-effort="${3:-high}"
+effort="${3:-xhigh}"
 model="${FUSION_CODEX_MODEL:-gpt-5.5}"
 
 scratch="$(mktemp -d "${TMPDIR:-/tmp}/fusion-codex.XXXXXX")"

@@ -40,6 +40,15 @@ may add a blind spot none of them named.
 Grounded in the analysis above: lead with high-confidence consensus, fold in the unique insights, flag what
 stays uncertain. It must follow *from* the analysis, not be one panelist's answer lightly edited.
 
+**Make it self-contained — name approaches by what they do, not by labels.** A reader who reads *only* the
+final answer, without the analysis below it or the original prompt, must understand the recommendation and
+why. Never refer to an approach by an opaque shorthand the reader would have to scroll up to decode —
+"Option A", "方針B", "candidate 2", "the first design". This trap is easy to fall into when *you* coined
+those labels (e.g. in the panelist prompts): the panelists echo them back and they leak into your synthesis.
+Restate the chosen approach in plain terms at the point of recommendation (what it changes, how it behaves);
+if you compare two, gloss each in a clause before you reference it. Such labels are fine in the audit trail
+below — they aid traceability there — but not in the recommendation itself.
+
 **This synthesized answer is the deliverable** — mirroring the API, there is no later "now I'll do it solo"
 phase in which a panelist quietly drops out. If your final carries nothing that only one panelist surfaced,
 you under-used the panel; re-read their answers before you ship.

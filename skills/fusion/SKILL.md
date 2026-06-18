@@ -50,9 +50,9 @@ Launch **both panelists in a single turn** so they run concurrently:
   ```bash
   p=$(mktemp /tmp/fusion_codex_prompt.XXXXXX); o=$(mktemp /tmp/fusion_codex_out.XXXXXX)
   # write the verbatim panelist prompt to "$p", then:
-  bash <skill_dir>/scripts/run_codex.sh "$p" "$o" high
+  bash <skill_dir>/scripts/run_codex.sh "$p" "$o" xhigh
   ```
-  The runner pins the model to GPT-5.5, forces Codex Fast mode, and defaults to high reasoning effort.
+  The runner pins the model to GPT-5.5, forces Codex Fast mode, and defaults to xhigh reasoning effort.
   `-o` makes codex write only its final answer to the out file; read it once it finishes.
 
 Keep the panelists isolated: never paste one panelist's output into the other's prompt. The orchestrator
@@ -92,6 +92,11 @@ The calling model (you, Opus 4.8) writes the **final answer grounded in that ana
 high-confidence consensus, fold in the unique insights, flag what stays uncertain. It must follow *from* the
 synthesis, not be one panelist's answer lightly edited.
 
+Write it **self-contained**: name approaches by what they *do*, not by opaque labels ("Option A", "方針B",
+"candidate 2") the reader would have to scroll up to decode — especially labels you coined in the panelist
+prompts, which leak back through the panelists into your synthesis. Keep such shorthand to the audit trail.
+See `references/judge_rubric.md` ("Make it self-contained").
+
 **The synthesized answer IS the deliverable.** Mirroring the API, there is no separate "now I'll just
 build/execute it myself" phase after the panel — the fused answer is the output. Two checks:
 
@@ -108,7 +113,8 @@ candidate.
 
 Lead with the **final answer**, then the audit trail beneath it: the five-section structured analysis with
 per-panelist attribution, and — if you verified by running — what you ran and observed. Note which panelists
-participated (e.g. Opus 4.8 + GPT-5.5).
+participated (e.g. Opus 4.8 + GPT-5.5). The final answer must **stand on its own** — the audit trail is for
+tracing a decision back to its source, not for decoding what the recommendation means.
 
 ## Single round & recursion protection
 
